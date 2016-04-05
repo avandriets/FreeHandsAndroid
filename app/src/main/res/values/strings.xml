@@ -1,0 +1,10 @@
+<resources>
+    <string name="sync_account_type" translatable="false">freehands.usefulservices.com</string>
+    <string name="content_authority" translatable="false">com.usefulservices.freehands</string>
+
+    <string name="app_name">Free Hands</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+
+</resources>

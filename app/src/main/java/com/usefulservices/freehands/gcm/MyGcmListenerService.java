@@ -39,7 +39,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         if (!data.isEmpty()) {
 
-            String senderId = getString(R.string.gcm_NewDryadSenderId); //getString(R.string.gcm_defaultSenderId);
+            String senderId = getString(R.string.gcm_defaultSenderId); //getString(R.string.gcm_defaultSenderId);
             if (senderId.length() == 0) {
                 Toast.makeText(this, "SenderID string needs to be set", Toast.LENGTH_LONG).show();
             }

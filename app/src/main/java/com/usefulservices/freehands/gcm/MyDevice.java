@@ -33,6 +33,9 @@ public class MyDevice {
 
         AccountsStore acc = AccountsStore.getActiveUser();
 
+        if(acc == null)
+            return;
+
         HashMap<String, String> jsonParameters = new HashMap<String, String>();
         jsonParameters.put("dev_id", deviceID);
         jsonParameters.put("reg_id", registrationId);
@@ -56,7 +59,7 @@ public class MyDevice {
         }
     }
 
-    public static void unregister(String deviceID) {
+    public static void unregister(String deviceID, String token) {
 
         Retrofit retrofit;
         TaxiService service;
@@ -68,12 +71,10 @@ public class MyDevice {
 
         service = retrofit.create(TaxiService.class);
 
-        AccountsStore acc = AccountsStore.getActiveUser();
-
         HashMap<String, String> jsonParameters = new HashMap<String, String>();
         jsonParameters.put("dev_id", deviceID);
 
-        Call<ResponseBody> retPoint = service.unregisterDevice(jsonParameters, "Bearer " + acc.getMy_server_access_token());
+        Call<ResponseBody> retPoint = service.unregisterDevice(jsonParameters, "Bearer " + token);
         //Call<ResponseBody> retPoint = service.unregisterDevice(jsonParameters);
 
         try {

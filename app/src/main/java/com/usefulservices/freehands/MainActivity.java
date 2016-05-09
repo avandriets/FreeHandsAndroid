@@ -310,6 +310,7 @@ public class MainActivity extends AppCompatActivity
             setupDrawerContent(navigationView, acc);
         }
 
+
         if(progressDialog.isShowing())
             progressDialog.dismiss();
     }

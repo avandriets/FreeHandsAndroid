@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <lint>
-    <issue id="MissingTranslation">
-        <ignore regexp="google_app_id"/>
+    <!--<issue id="MissingTranslation">-->
+        <!--<ignore regexp="google_app_id"/>-->
+    <!--</issue>-->
+    <issue id="InvalidPackage">
+        <ignore regexp=".*okio.*" />
+        <ignore regexp=".*retrofit.*" />
     </issue>
 </lint>

@@ -39,10 +39,16 @@ public class Utility {
     public static final String GOOGLE_TOKEN_WAS_GOT = "Google_token_got";
     public static final String EXCHANGE_TOKEN_WAS_GOT = "Exchange_token_was_got";
 
-    public static final     String BASE_URL             = "http://digitallifelab.cloudapp.net:8081";
+    //public static final     String BASE_URL             = "http://digitallifelab.cloudapp.net:8081";
+    public static final     String BASE_URL             = "http://192.168.0.100:8081";
     public static final     String CONVERT_TOKEN_URL    = "/auth/convert-token/";
-    static public final     String REGISTER_URL         = "/gcm/v1/device/register/";
-    static public final     String UNREGISTER_URL       = "/gcm/v1/device/unregister/";
+    public static final     String REGISTER_URL         = "/gcm/v1/device/register/";
+    public static final     String UNREGISTER_URL       = "/gcm/v1/device/unregister/";
+
+    public static final String CarTypesURL    = "/rest/car_types/";
+    public static final String CountryURL     = "/rest/countries/";
+    public static final String CityURL        = "/rest/cities/";
+
     public static OkHttpClient mClientOkHttp;
 
     public static boolean isNetworkAvailable(Context context) {

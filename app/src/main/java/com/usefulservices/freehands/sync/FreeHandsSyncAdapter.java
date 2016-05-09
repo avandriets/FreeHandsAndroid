@@ -11,15 +11,24 @@ import android.content.SyncResult;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.usefulservices.freehands.Data.AccountsStore;
+import com.usefulservices.freehands.Data.City;
+import com.usefulservices.freehands.Data.Country;
+import com.usefulservices.freehands.Data.DatabaseHelper;
 import com.usefulservices.freehands.Data.DbInstance;
 import com.usefulservices.freehands.Data.TaxiService;
 import com.usefulservices.freehands.R;
 import com.usefulservices.freehands.Utils.Utility;
-
+import java.io.IOException;
+import java.util.List;
+import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+
 
 public class FreeHandsSyncAdapter extends AbstractThreadedSyncAdapter {
 
@@ -27,12 +36,23 @@ public class FreeHandsSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final String ACTION_DATA_UPDATED = "com.digitallifelab.environmentmonitor.ACTION_DATA_UPDATED";
     // Interval at which to sync, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
-    public static final int SYNC_INTERVAL = 60 * 180;
+    public static final int SYNC_INTERVAL = 60 * 5;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
+    private Context mContext;
+
+    private DatabaseHelper mDatabaseHelper = null;
+
+    private DatabaseHelper getHelper() {
+        if (mDatabaseHelper == null) {
+            mDatabaseHelper = OpenHelperManager.getHelper(mContext, DatabaseHelper.class);
+        }
+        return mDatabaseHelper;
+    }
 
     public FreeHandsSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
 
+        mContext = context;
     }
 
     @Override
@@ -45,38 +65,92 @@ public class FreeHandsSyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
-        boolean destroyHelper = false;
-
-        //Synchronize data with server
-        DbInstance dbInstance = new DbInstance();
-
         AccountsStore acc = AccountsStore.getActiveUser();
 
+
+        String authString = "Bearer " + acc.getMy_server_access_token();
+
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+                .create();
+
+        //GET DATA from server
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Utility.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+        TaxiService service = retrofit.create(TaxiService.class);
+
+        //get open data
+        loadCountriesFromServer(service);
+        loadCitiesFromServer(service);
+
+        //get closed data
         if(acc != null) {
 
-            if(dbInstance.getDatabaseHelper() == null){
-                dbInstance.SetDBHelper(getContext());
-            }
 
-            String authString = "Bearer " + acc.getMy_server_access_token();
-            //GET DATA from server
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(Utility.BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-
-            TaxiService service = retrofit.create(TaxiService.class);
-
-
-            if(destroyHelper){
-                OpenHelperManager.releaseHelper();
-                dbInstance.releaseHelper();
-            }
         }
 
-        return;
+        if (mDatabaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            mDatabaseHelper = null;
+        }
     }
 
+    private void loadCountriesFromServer(TaxiService service) {
+
+        Call<List<Country>> retGetCountries = service.getCountry();
+
+        try {
+            Response<List<Country>> response = retGetCountries.execute();
+
+            if (response.isSuccessful()) {
+                List<Country> countries = response.body();
+
+                Country newCountry = null;
+                for (Country country :countries) {
+                    newCountry = mDatabaseHelper.getCountryDataDao().createIfNotExists(country);
+                }
+                Log.d(LOG_TAG, "Get countries successful");
+            } else {
+                Log.d(LOG_TAG, "Get error.");
+            }
+
+        } catch ( Exception e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Get error.");
+        }
+
+    }
+
+    private void loadCitiesFromServer(TaxiService service) {
+
+        Call<List<City>> retGetCities = service.getCity();
+
+        try {
+            Response<List<City>> response = retGetCities.execute();
+
+            if (response.isSuccessful()) {
+                List<City> cities = response.body();
+
+                City newCity = null;
+                for (City city :cities) {
+                    Country country = mDatabaseHelper.getCountryDataDao().queryForId(city.getCountry_id());
+                    city.setCountry(country);
+                    newCity = mDatabaseHelper.getCityDataDao().createIfNotExists(city);
+                }
+                Log.d(LOG_TAG, "Get countries successful");
+            } else {
+                Log.d(LOG_TAG, "Get error.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Get error. " + e.getMessage());
+        }
+
+    }
 
     /**
      * Helper method to schedule the sync adapter periodic execution

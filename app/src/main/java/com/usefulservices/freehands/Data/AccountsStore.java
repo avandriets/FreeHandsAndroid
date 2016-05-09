@@ -24,6 +24,7 @@ public class AccountsStore {
     public static final String USER_NAME          = "USER_NAME";
     public static final String FIRST_NAME         = "FIRST_NAME";
     public static final String LAST_NAME          = "LAST_NAME";
+    public static final String DB_USER_ID          = "DB_USER_ID";
 
     @DatabaseField(id = true, canBeNull = false, columnName = EMAIL_FIELD_NAME)
     private String Email;
@@ -54,6 +55,9 @@ public class AccountsStore {
 
     @DatabaseField(columnName = LAST_NAME)
     private String last_name;
+
+    @DatabaseField(canBeNull = true, columnName = DB_USER_ID)
+    private long db_user_id;
 
 
     public AccountsStore() {
